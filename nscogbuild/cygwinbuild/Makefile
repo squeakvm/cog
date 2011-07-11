@@ -26,7 +26,7 @@ BUILD:=buildast
 else
 BUILD:=builddbg
 endif
-SRCDIR:= ../../nssrc
+SRCDIR:= ../../nscogsrc
 BLDDIR:= $(BASEDIR)/$(BUILD)
 OBJDIR:= $(BLDDIR)/vm
 
@@ -40,7 +40,7 @@ WIN32UTILDIR:=$(PLATDIR)/win32/util
 
 CROSSSRC:= $(wildcard $(CROSSDIR)/*.c) $(wildcard $(CROSSDIR)/*.cpp)
 WIN32SRC:= $(wildcard $(WIN32DIR)/*.c) $(wildcard $(WIN32DIR)/*.cpp)
-MAKERSRC:= $(MAKERDIR)/gcc3x-interp.c
+MAKERSRC:= $(MAKERDIR)/gcc3x-cointerp.c $(MAKERDIR)/cogit.c
 VMSRC:= $(notdir $(MAKERSRC) $(WIN32SRC) $(CROSSSRC))
 
 VPATH:= $(MAKERDIR) $(WIN32DIR) $(CROSSDIR)
@@ -59,7 +59,7 @@ DLLS:= $(addprefix $(OBJDIR)/, $(addsuffix .dll, $(EXTERNAL_PLUGINS)))
 #
 VMDIR:= $(SRCDIR)/vm
 VMOBJ:=	$(VMSRC:.c=.o)
-VMOBJ:=	$(filter-out sqWin32Heartbeat.o, $(VMOBJ))
+#VMOBJ:=	$(filter-out sqFilePrims.o, $(VMOBJ))
 VMOBJ:= $(addprefix $(OBJDIR)/,$(VMOBJ))
 
 #LIBSRC:= $(wildcard *.c)
@@ -105,15 +105,15 @@ CC:=gcc
 # VM config flags.
 ifeq ("$(CONFIGURATION)","product")
 OFLAGS:= -D_MT -O2 -march=pentium4 -momit-leaf-frame-pointer -funroll-loops
-NDEBUG:=-DNDEBUG -D'VM_LABEL(foo)=0' # Define NDEBUG for production to exclude asserts
+NDEBUG:=-DNDEBUG -D'VM_LABEL(foo) 0' # Define NDEBUG for production to exclude asserts
 DEBUGVM=0
 else ifeq ("$(CONFIGURATION)","assert")
 OFLAGS:= -D_MT -O1 -march=pentium4 -fno-omit-frame-pointer
-NDEBUG:=-D'VM_LABEL(foo)=0'
+NDEBUG:=-D'VM_LABEL(foo) 0'
 DEBUGVM=0
 else
 OFLAGS:= -D_MT -march=pentium4
-NDEBUG:=-DNODBGPRINT=1 -D'VM_LABEL(foo)=0'
+NDEBUG:=-DNODBGPRINT=1 -D'VM_LABEL(foo)=0' -D'bzero(p,s)=__builtin_bzero((p),(s))'
 DEBUGVM=1
 endif
 
