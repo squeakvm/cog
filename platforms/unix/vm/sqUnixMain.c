@@ -434,7 +434,7 @@ sqInt ioDisablePowerManager(sqInt disableIfNonZero)
 #endif
 
 static char *
-getAttribute(sqInt id)
+GetAttributeString(sqInt id)
 {
   if (id < 0)	/* VM argument */
     {
@@ -492,13 +492,13 @@ getAttribute(sqInt id)
 
 sqInt attributeSize(sqInt id)
 {
-  return strlen(getAttribute(id));
+  return strlen(GetAttributeString(id));
 }
 
 sqInt getAttributeIntoLength(sqInt id, sqInt byteArrayIndex, sqInt length)
 {
   if (length > 0)
-    strncpy(pointerForOop(byteArrayIndex), getAttribute(id), length);
+    strncpy(pointerForOop(byteArrayIndex), GetAttributeString(id), length);
   return 0;
 }
 
@@ -833,6 +833,7 @@ reportStackState(char *msg, char *date, int printAll, ucontext_t *uap)
 	printf("\nMost recent primitives\n");
 	dumpPrimTraceLog();
 #endif
+	printf("\n\t(%s)\n", msg);
 	fflush(stdout);
 }
 
@@ -1633,7 +1634,8 @@ void imgInit(void)
 # define mtfsfi(fpscr)
 #endif
 
-int main(int argc, char **argv, char **envp)
+int
+main(int argc, char **argv, char **envp)
 {
   fldcw(0x12bf);	/* signed infinity, round to nearest, REAL8, disable intrs, disable signals */
   mtfsfi(0);		/* disable signals, IEEE mode, round to nearest */
