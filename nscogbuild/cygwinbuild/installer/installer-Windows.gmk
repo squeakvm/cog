@@ -37,8 +37,7 @@ FRESH_GUID = $(shell $(UUIDGEN) /c)
 FRESH_GUID_RULE1 = -e 's/@@FRESH_GUID1@@/$(FRESH_GUID)/g;'
 FRESH_GUID_RULE2 = -e 's/@@FRESH_GUID2@@/$(FRESH_GUID)/g;'
 FRESH_GUID_RULE3 = -e 's/@@FRESH_GUID3@@/$(FRESH_GUID)/g;'
-FRESH_GUID_RULE4 = -e 's/@@FRESH_GUID4@@/$(FRESH_GUID)/g;'
-FRESH_GUID_RULE = $(FRESH_GUID_RULE1) $(FRESH_GUID_RULE2) $(FRESH_GUID_RULE3) $(FRESH_GUID_RULE4)
+FRESH_GUID_RULE = $(FRESH_GUID_RULE1) $(FRESH_GUID_RULE2) $(FRESH_GUID_RULE3)
 
 REGULAR_IDTS := Feature.idt
 REGULAR_IDTS += Icon.idt
@@ -53,19 +52,23 @@ SOURCES_IDTS += Directory.idt
 SOURCES_IDTS += Component.idt
 SOURCES_IDTS += FeatureComponents.idt
 File.idt : File-with-sources.idt.in
+files.ddf : files-with-sources.ddf.in
+files.cab: files.ddf $(VM_EXECUTABLE) $(VM_EXECUTABLE_MAP) $(VM_EXECUTABLE_MANIFEST) $(SOURCEFILENAME1)
 else
 REGULAR_IDTS += Directory.idt
 REGULAR_IDTS += Component.idt
 REGULAR_IDTS += FeatureComponents.idt
 File.idt : File.idt.in
+files.ddf : files.ddf.in $(DOCUMENTATION_FILES) $(DOCUMENTATION_INDEX)
+files.cab : files.ddf $(VM_EXECUTABLE) $(VM_EXECUTABLE_MAP) $(VM_EXECUTABLE_MANIFEST)
 endif
 
 IDTS := File.idt $(REGULAR_IDTS) $(SOURCES_IDTS)
 
-$(REGULAR_IDTS) : %.idt : %.idt.in
+$(REGULAR_IDTS) : %.idt : %.idt.in Makefile
 	$(SED) $(SED_RULES) $(FRESH_GUID_RULE) < $< > $@
 
-$(SOURCES_IDTS) : %.idt : %-with-sources.idt.in
+$(SOURCES_IDTS) : %.idt : %-with-sources.idt.in Makefile
 	$(SED) $(SED_RULES) $(FRESH_GUID_RULE) < $< > $@
 
 SED_FILTER_CONTROL := -e 's/1\(\t\t[[]DialogBitmap]\)/1048577\1/g;'
@@ -111,18 +114,18 @@ Icon/$(notdir $(VM_ICON)).exe: icon.o nopMain.o
 	gcc -mwindows $^ -o $@
 	strip $@
 
-files.ddf: files.ddf.in $(DOCUMENTATION_INDEX) $(DOCUMENTATION_FILES)
+files.ddf:
 	$(SED) $(SED_RULES) $(FRESH_GUID_RULE) < $< > $@.tmp
 	@echo $(DOCUMENTATION_INDEX) $(DOCUMENTATION_FILES) | xargs -n 1 >> $@.tmp
 	mv $@.tmp $@
 
-File.idt: $(DOCUMENTATION_FILES)
+File.idt: Makefile
 File.idt:
 	$(SED) $(SED_RULES) $(FRESH_GUID_RULE) < $< > $@.tmp
 	echo $(foreach docfile,$(strip $(DOCUMENTATION_FILES)), '$(notdir $(docfile))' '$(call dosname,$(notdir $(docfile)))' '$(notdir $(docfile))') | xargs -r -n 3 printf '%s\tDocumentation\t%s|%s\t0\t\t\t16896\t1\n' >> $@.tmp
 	mv $@.tmp $@
 
-files.cab: files.ddf $(VM_EXECUTABLE) $(VM_EXECUTABLE_MAP) $(DOCUMENTATION_FILES) $(SOURCEFILENAME1)
+files.cab:
 	makecab /D SourcesDir='$(shell cygpath -wa .)' /f $<
 	@echo
 
@@ -141,4 +144,4 @@ $(MSIVAL2): $(WIN_SDK)Bin/MsiVal2.Msi
 installer: $(MSI_NAME)
 
 clean::
-	-rm -rf $(IDTS) Icon Binary Binary.idt *.msi "$(BRAND_DIR)" files.ddf files.cab setup.inf nopMain.o Control.idt.orig Control.idt copyright.rtf
+	-rm -rf $(IDTS) Icon Binary Binary.idt *.msi "$(BRAND_DIR)" files.ddf files.cab setup.inf nopMain.o Control.idt.orig Control.idt copyright.rtf icon.o

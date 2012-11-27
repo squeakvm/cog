@@ -14,15 +14,22 @@ include branding.gmk
 # Cab contents:
 VM_EXECUTABLE := $(VM_BASE_NAME).exe
 VM_EXECUTABLE_MAP := $(VM_BASE_NAME).map
+VM_EXECUTABLE_MANIFEST := $(VM_EXECUTABLE).manifest
+VM_MANIFEST_8DOT3 := $(VM_BASE_NAME).man
 VM_ICON := $(VM_BASE_NAME).ico
 SOURCEFILENAME1 := SqueakV41.sources
+
+CAB_FILES := $(VM_EXECUTABLE) $(VM_EXECUTABLE_MAP) $(VM_EXECUTABLE_MANIFEST)
+ifeq ($(strip $(SOURCES)),yes)
+CAB_FILES := $(CAB_FILES) $(SOURCEFILENAME1)
+endif
 
 CC := /usr/bin/gcc
 CP := /usr/bin/cp
 SED := /usr/bin/sed
 WINDRES := /usr/bin/windres
 
-icon.o:	../nsvm.rc
+icon.o:	../$(VM_BASE_NAME).rc
 	$(WINDRES) --include-dir=.. --define _WIN32 -l 0 -i $< -o $@
 
 $(VM_EXECUTABLE): ../build/vm/$(VM_EXECUTABLE)
@@ -30,6 +37,10 @@ $(VM_EXECUTABLE): ../build/vm/$(VM_EXECUTABLE)
 	cp $< $@
 
 $(VM_EXECUTABLE_MAP):	../build/vm/$(VM_EXECUTABLE_MAP)
+	rm -f $@
+	grep " [tT] " $< | grep -v ' t \.text$' >$@
+
+$(VM_EXECUTABLE_MANIFEST):	../build/vm/$(VM_EXECUTABLE_MANIFEST)
 	rm -f $@
 	cp $< $@
 
