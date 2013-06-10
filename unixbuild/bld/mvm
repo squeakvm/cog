@@ -1,4 +1,8 @@
 #!/bin/sh
+INSTALLDIR=coglinux
+if [ $# -ge 1 ]; then
+	INSTALLDIR="$1"; shift
+fi
 # Some gcc versions create a broken VM using -O2
 case `gcc -v 2>&1 | grep version | sed 's/gcc version *//'` in
 3.4.*)	OPT=-O1;;
@@ -9,7 +13,7 @@ echo -n "clean? "
 read a
 case $a in
 n|no|N|NO)	echo "ok but this isn't safe!!";;
-*)			make reallyclean
+*)			test -f Makefile && make reallyclean
 esac
 test -f config.h || ../../platforms/unix/config/configure --without-npsqueak \
 	CC="gcc -m32" \
@@ -17,5 +21,5 @@ test -f config.h || ../../platforms/unix/config/configure --without-npsqueak \
 	LIBS=-lpthread \
 	LDFLAGS=-Wl,-z,now
 ../../scripts/nukeversion
-rm -rf ../../coglinux
-make install prefix=`(cd ../../;pwd)`/coglinux
+rm -rf ../../$INSTALLDIR
+make install prefix=`(cd ../../;pwd)`/$INSTALLDIR

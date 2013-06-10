@@ -1,4 +1,8 @@
 #!/bin/sh
+INSTALLDIR=cogmtlinux
+if [ $# -ge 1 ]; then
+	INSTALLDIR="$1"; shift
+fi
 # Some gcc versions create a broken VM using -O2
 case `gcc -v 2>&1 | grep version | sed 's/gcc version *//'` in
 3.4.*)	OPT=-O1;;
@@ -9,7 +13,7 @@ echo -n "clean? "
 read a
 case $a in
 n|no|N|NO)	echo "ok but this isn't safe!!";;
-*)			make reallyclean
+*)			test -f Makefile && make reallyclean
 esac
 test -f config.h || ../../platforms/unix/config/configure INTERP=cointerpmt \
 	--without-npsqueak \
@@ -18,5 +22,5 @@ test -f config.h || ../../platforms/unix/config/configure INTERP=cointerpmt \
 	LIBS=-lpthread \
 	LDFLAGS=-Wl,-z,now
 ../../scripts/nukeversion
-rm -rf ../../cogmtlinux
-make install prefix=`(cd ../../;pwd)`/cogmtlinux
+rm -rf ../../$INSTALLDIR
+make install prefix=`(cd ../../;pwd)`/$INSTALLDIR

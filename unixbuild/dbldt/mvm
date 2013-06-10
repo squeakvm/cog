@@ -1,10 +1,14 @@
 #!/bin/sh
 # VM with VM profiler and threaded heartbeat assuming multiple thread priorities
+INSTALLDIR=cogdbglinuxpt
+if [ $# -ge 1 ]; then
+	INSTALLDIR="$1"; shift
+fi
 echo -n "clean? "
 read a
 case $a in
 n|no|N|NO)	echo "ok but this isn't safe!!";;
-*)			make reallyclean
+*)			test -f Makefile && make reallyclean
 esac
 test -f config.h || ../../platforms/unix/config/configure --without-npsqueak \
 	CC="gcc -m32" \
@@ -12,5 +16,5 @@ test -f config.h || ../../platforms/unix/config/configure --without-npsqueak \
 	LIBS=-lpthread \
 	LDFLAGS=-Wl,-z,now
 ../../scripts/nukeversion
-rm -rf ../../cogdbglinuxpt
-make install prefix=`(cd ../../;pwd)`/cogdbglinuxpt
+rm -rf ../../$INSTALLDIR
+make install prefix=`(cd ../../;pwd)`/$INSTALLDIR
