@@ -1,7 +1,10 @@
 #!/bin/bash
 INSTALLDIR=nsvmlinuxast
 if [ $# -ge 1 ]; then
-	INSTALLDIR="$1"; shift
+	case "$1" in
+	-*)	;;
+	*)	INSTALLDIR="$1"; shift
+	esac
 fi
 OPT=-O1
 
@@ -9,7 +12,7 @@ echo -n "clean? "
 read a
 case $a in
 n|no|N|NO)	echo "ok but this isn't safe!!";;
-*)			test -f Makefile && make reallyclean
+*)			rm config.h; test -f Makefile && make reallyclean
 esac
 test -f config.h || ../../../platforms/unix/config/configure --with-src=nscogsrc \
 	--without-vm-display-fbdev --without-npsqueak \
